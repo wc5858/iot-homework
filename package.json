@@ -1,0 +1,19 @@
+{
+  "name": "project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "coap": "^0.23.1",
+    "mosca": "^2.8.3",
+    "mqtt": "^2.18.8",
+    "serialport": "^7.1.4",
+    "ws": "^6.2.1"
+  }
+}

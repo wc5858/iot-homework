@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+</head>
+
+<body style="height: 100%; margin: 0">
+    <div id="container1" style="height: 300px"></div>
+    <div id="container2" style="height: 300px"></div>
+    <div id="container3" style="height: 300px"></div>
+    <div id="container4" style="height: 300px"></div>
+    <script type="text/javascript" src="http://echarts.baidu.com/gallery/vendors/echarts/echarts.min.js"></script>
+    <script>
+        var dom1 = document.getElementById("container1");
+        var dom2 = document.getElementById("container2");
+        var dom3 = document.getElementById("container3");
+        var dom4 = document.getElementById("container4");
+        var myChart1 = echarts.init(dom1);
+        var myChart2 = echarts.init(dom2);
+        var myChart3 = echarts.init(dom3);
+        var myChart4 = echarts.init(dom4);
+        let arr = []
+        for(let i = 0;i<100;i++){
+            arr.push(i)
+        }
+        let arr2 = [...arr]
+        let arr3 = [...arr]
+        var option1 = {
+            title: {
+                text: '温度传感器数据'
+            },
+            xAxis: {
+                type: 'category',
+                data: arr,
+                axisLabel: false
+            },
+            yAxis: {
+                type: 'value',
+                scale: true
+            },
+            series: [{
+                type: 'line',
+                showSymbol: false,
+                hoverAnimation: false,
+                data: []
+            }]
+        };
+        var option2 = {
+            title: {
+                text: '光敏电阻数据'
+            },
+            xAxis: {
+                type: 'category',
+                data: arr2,
+                // axisLabel: false
+            },
+            yAxis: {
+                type: 'value',
+                scale: true
+            },
+            series: [{
+                type: 'line',
+                showSymbol: false,
+                hoverAnimation: false,
+                data: []
+            }]
+        };
+        var option3 = {
+            title: {
+                text: '旋钮传感器数据'
+            },
+            xAxis: {
+                type: 'category',
+                data: arr3,
+                axisLabel: false
+            },
+            yAxis: {
+                type: 'value',
+                scale: true
+            },
+            series: [{
+                type: 'line',
+                showSymbol: false,
+                hoverAnimation: false,
+                data: []
+            }]
+        };
+        var option4 = {
+            title: {
+                text: '湿度传感器数据'
+            },
+            xAxis: {
+                type: 'category',
+                data: arr,
+                axisLabel: false
+            },
+            yAxis: {
+                type: 'value',
+                scale: true
+            },
+            series: [{
+                type: 'line',
+                showSymbol: false,
+                hoverAnimation: false,
+                data: []
+            }]
+        };
+        var ws = new WebSocket("ws://localhost:8888");
+
+        ws.onopen = function (e) { }
+
+        ws.onmessage = function (e) {
+            if (e.data.indexOf('$') != 0) {
+                // 说明是起始数据
+                let data = JSON.parse(e.data)
+                option1.series.data = data.httpData.map(item => item ? item.temperature : 0)
+                option2.series.data = data.mqttData
+                option3.series.data = data.coapData
+                option4.series.data = data.httpData.map(item => item ? item.humidity : 0)
+                myChart1.setOption(option1, true)
+                myChart2.setOption(option2, true)
+                myChart3.setOption(option3, true)
+                myChart4.setOption(option4, true)
+            } else {
+                if (e.data.indexOf('$temperature') == 0) {
+                    option1.series.data.shift()
+                    option1.series.data.push(e.data.split(';')[0].split('-')[1])
+                    option4.series.data.shift()
+                    option4.series.data.push(e.data.split(';')[1].split('-')[1])
+                    arr.shift()
+                    arr.push(arr[98]+1)
+                    
+                    myChart1.setOption({
+                        xAxis: {
+                            data: arr
+                        },
+                        series: [{
+                            data: option1.series.data
+                        }]
+                    })
+                    myChart4.setOption({
+                        xAxis: {
+                            data: arr
+                        },
+                        series: [{
+                            data: option4.series.data
+                        }]
+                    })
+                }
+                if (e.data.indexOf('$light') == 0) {
+                    option2.series.data.shift()
+                    option2.series.data.push(e.data.split('-')[1])
+                    arr2.shift()
+                    arr2.push(arr2[98]+1)
+                    myChart2.setOption({
+                        xAxis: {
+                            data: arr2
+                        },
+                        series: [{
+                            data: option2.series.data
+                        }]
+                    })
+                }
+                if (e.data.indexOf('$btn') == 0) {
+                    option3.series.data.shift()
+                    option3.series.data.push(e.data.split('-')[1])
+                    arr3.shift()
+                    arr3.push(arr3[98]+1)
+                    myChart3.setOption({
+                        xAxis: {
+                            data: arr3
+                        },
+                        series: [{
+                            data: option3.series.data
+                        }]
+                    })
+                }
+            }
+        };
+        ws.onclose = function (e) {
+            console.log('connection closed.');
+        }
+    </script>
+
+</body>
+
+</html>
